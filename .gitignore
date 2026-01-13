@@ -1,0 +1,20 @@
+.env
+*.sqlite3
+.venv
+# Ignore Python virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE files
+.idea/
+*.iml
+
+# Optional: large binaries
+*.so
+*.bin
+venv
