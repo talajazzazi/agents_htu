@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from decouple import config
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -125,8 +126,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# OpenAI Config
+OPENAI_API_KEY=config('OPENAI_API_KEY')
+OPENAI_MODEL=config('OPENAI_MODEL')
+OPENAI_MAX_RETRIES=config('OPENAI_MAX_RETRIES')
+OPENAI_DEFAULT_TEMPERATURE=config('OPENAI_DEFAULT_TEMPERATURE', cast=float)
+OPENAI_DEFAULT_ERROR_MESSAGE=config('OPENAI_DEFAULT_ERROR_MESSAGE')
