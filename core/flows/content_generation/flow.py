@@ -1,5 +1,7 @@
+import asyncio
+from itertools import zip_longest
 from crewai.flow import Flow, listen, start, router, or_
-from core.crews import TextGenerationCrew
+from core.crews import TextGenerationCrew, ImageGeneratorCrew
 from core.utils import render_markdown
 from .schema import ContentGenerationState
 from core.tools import basic_llm
@@ -71,10 +73,43 @@ class ContentGenerationFlow(Flow[ContentGenerationState]):
             logger.error(f"JSON Decode Error: {e}")
             self.state.text_generation_output = {"error": "Invalid JSON returned"}
 
-    @listen(or_(writing_post))
+    @listen("image_only")
+    async def image_generator(self):
+
+        result = await (
+            ImageGeneratorCrew()
+            .crew()
+            .kickoff_async(
+                inputs={
+                    "user_query": self.state.user_query,
+                    "tenant_name": self.state.tenant_name,
+                    "tenant_description": self.state.tenant_description,
+                }
+            )
+        )
+
+        result_str = result.raw
+        result_json = json.loads(result_str)
+
+        self.state.image_generation_output = result_json
+
+    @listen("text_with_image")
+    async def generate_both_text_and_image(self):
+
+        text_task = asyncio.create_task(self.writing_post())
+        image_task = asyncio.create_task(self.image_generator())
+
+        await asyncio.gather(text_task, image_task)
+
+    @listen(or_(generate_both_text_and_image, image_generator, writing_post))
     def final_result(self):
         try:
             final_output = {}
+
+            if self.state.image_generation_output:
+                final_output["image_generation_results"] = (
+                    self.state.image_generation_output
+                )
 
             if self.state.text_generation_output:
                 final_output["text_generation_results"] = (
@@ -82,12 +117,14 @@ class ContentGenerationFlow(Flow[ContentGenerationState]):
                 )
 
             reshaped = []
+            images = final_output.get("image_generation_results", {}).get("images", [])
             texts = final_output.get("text_generation_results", {}).get("blogs", [])
 
-            for txt in texts:
+            for img, txt in zip_longest(images, texts, fillvalue={}):
                 reshaped.append(
                     {
                         "text": txt.get("content_of_blog") if txt else None,
+                        "image": img.get("image_url") if img else None,
                     }
                 )
 

@@ -1,0 +1,48 @@
+image_prompt_creator_task:
+  description: |
+    ### Input:
+    - **tenant_name:** {tenant_name}  
+    - **tenant_description:** {tenant_description}  
+    - **user_query:** {user_query}  
+      (The raw content or idea provided by the user, which will be transformed into a visually descriptive image prompt.)
+
+    ### Task:
+    Convert the **user_query** into a polished, image-ready prompt that enhances visual output quality.
+    - Ensure the image reflects the style, tone, or theme of **{tenant_name}**, guided by the **tenant_description**.
+    - Ensure the image is about a restaurant category if user doesn't specify the restaurant(food) category or if doesn't we have **tenant_description**. 
+    - Ensure the final prompt is clear, concise, and does not exceed 150 words.
+    - The prompt must be written in **English**. If the input is in another language, accurately translate it to English before rewriting.
+    - Write the prompt in a single, well-structured paragraph.
+    - Align the visual tone and style of the prompt with the branding elements of the blog, including references to name, logo, colors, or fonts where applicable.
+    - Use rich visual language to inspire AI image generation tools effectively.
+
+  expected_output: >
+    A string object containing a descriptive and visually rich image prompt in English.
+
+  agent: image_prompt_creator
+
+image_generator_task:
+  description: |
+    ### Input:
+    - **user_query:** {user_query} (The content from which the image will be created.)
+
+    Create only 3 different images for the **{user_query}** that align with social media platforms, ensuring it aligns with the tone and audience for the user_query.
+
+    Ensure the text within the image is grammatically correct, with no added text that isn't mentioned in the blog. The design should be clear and visually appealing.
+
+    Ensure the design style aligns with the blog's tone and includes branding elements (name, logo, colors, fonts) for consistency.
+
+    If applicable, add a clear call-to-action (CTA) for engagement, ensuring the design is mobile-friendly with key elements centered.
+
+  expected_output: >
+    Create OnLY JSON Object that represents a list of image blogs based on the following structure: 
+
+    A images field, which holds a list of image blog posts. Each image blog post in the list should include:
+
+    number_of_image: An integer representing the number of the image.
+
+    image_url: A string containing the URL of the image.
+
+    image_size: A string representing the size of the image.
+
+  agent: image_generator
