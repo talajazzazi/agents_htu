@@ -5,3 +5,4 @@ crewai-tools==0.38.1
 openai==1.70.0
 djangorestframework
 psycopg2-binary==2.9.10
+requests

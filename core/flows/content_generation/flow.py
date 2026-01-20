@@ -7,6 +7,7 @@ from .schema import ContentGenerationState
 from core.tools import basic_llm
 import json
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,10 @@ class ContentGenerationFlow(Flow[ContentGenerationState]):
 
             if content_type == "text_only":
                 return "text_only"
+            if content_type == "image_only":
+                return "image_only"
+            if content_type == "text_with_image":
+                return "text_with_image"
         except Exception as e:
             logger.error(f"Error in routing: {e}")
 
@@ -81,9 +86,7 @@ class ContentGenerationFlow(Flow[ContentGenerationState]):
             .crew()
             .kickoff_async(
                 inputs={
-                    "user_query": self.state.user_query,
-                    "tenant_name": self.state.tenant_name,
-                    "tenant_description": self.state.tenant_description,
+                    "user_query": self.state.user_query
                 }
             )
         )
@@ -91,7 +94,64 @@ class ContentGenerationFlow(Flow[ContentGenerationState]):
         result_str = result.raw
         result_json = json.loads(result_str)
 
+        if "images" in result_json:
+            updated_images = []
+            for img_obj in result_json["images"]:
+                image_prompt = img_obj.get("image_prompt")
+                image_url = img_obj.get("image_url")
+                if image_prompt and (not image_url or image_url == "pending_generation" or image_url == "null"):
+                    try:
+                        generated_url = await self._generate_image_from_prompt(image_prompt)
+                        img_obj["image_url"] = generated_url
+                    except Exception as e:
+                        logger.error(f"Error generating image: {e}")
+                        img_obj["image_url"] = f"generation_failed: {str(e)}"
+                updated_images.append(img_obj)
+            result_json["images"] = updated_images
+
         self.state.image_generation_output = result_json
+
+    async def _generate_image_from_prompt(self, prompt: str) -> str:
+        import uuid
+        import os
+        from openai import OpenAI
+        from django.conf import settings
+
+        openai_api_key = getattr(settings, 'OPENAI_API_KEY', None)
+        if not openai_api_key:
+            raise ValueError("OPENAI_API_KEY not configured")
+
+        client = OpenAI(api_key=openai_api_key)
+
+        response = client.images.generate(
+            model="dall-e-3",
+            prompt=prompt,
+            size="1024x1024",
+            quality="standard",
+            n=1,
+        )
+
+        if response.data and len(response.data) > 0:
+            image_url = response.data[0].url
+            
+            try:
+                img_response = requests.get(image_url)
+                img_response.raise_for_status()
+                
+                os.makedirs("generated_images", exist_ok=True)
+                image_filename = f"generated_images/image_{uuid.uuid4().hex}.png"
+                
+                with open(image_filename, 'wb') as f:
+                    f.write(img_response.content)
+                
+                logger.info(f"Image saved locally to: {image_filename}")
+                
+            except Exception as e:
+                logger.warning(f"Could not save image locally: {e}")
+            
+            return image_url
+        else:
+            raise ValueError("No image data returned from OpenAI API")
 
     @listen("text_with_image")
     async def generate_both_text_and_image(self):
@@ -125,6 +185,7 @@ class ContentGenerationFlow(Flow[ContentGenerationState]):
                     {
                         "text": txt.get("content_of_blog") if txt else None,
                         "image": img.get("image_url") if img else None,
+                        "image_prompt": img.get("image_prompt") if isinstance(img, dict) and img else None,
                     }
                 )
 

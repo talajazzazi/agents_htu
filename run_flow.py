@@ -10,7 +10,7 @@ from core.flows.content_generation.flow import ContentGenerationFlow
 def main():
     flow = ContentGenerationFlow()
     result = flow.kickoff(
-        user_query="Create a professional LinkedIn post about AI in healthcare"
+        user_query="Create a professional LinkedIn image only about AI in healthcare"
     )
     
     print("\n" + "=" * 60)
@@ -20,7 +20,18 @@ def main():
     if result:
         for i, post in enumerate(result, 1):
             print(f"\n--- Post {i} ---")
-            print(post.get("text", "No content"))
+            text = post.get("text")
+            image = post.get("image")
+            image_prompt = post.get("image_prompt")
+            
+            if text:
+                print(f"Text: {text}")
+            if image:
+                print(f"Image URL: {image}")
+            if image_prompt:
+                print(f"Image Prompt: {image_prompt}")
+            if not text and not image and not image_prompt:
+                print("No content")
             print()
     else:
         print("No posts generated.")
