@@ -22,15 +22,13 @@ def main():
             print(f"\n--- Post {i} ---")
             text = post.get("text")
             image = post.get("image")
-            image_prompt = post.get("image_prompt")
-            
+
             if text:
                 print(f"Text: {text}")
             if image:
                 print(f"Image URL: {image}")
-            if image_prompt:
-                print(f"Image Prompt: {image_prompt}")
-            if not text and not image and not image_prompt:
+
+            if not text and not image:
                 print("No content")
             print()
     else:

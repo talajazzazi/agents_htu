@@ -20,12 +20,38 @@ image_prompt_creator_task:
 
     A images field, which holds a list of image objects. Each image object in the list should include:
 
-    number_of_image: An integer representing the number of the image (use 1 for a single image).
-
     image_url: Leave this field empty or set to null. The image URL will be generated automatically.
 
     image_size: A string representing the size of the image (use "1024x1024").
 
-    image_prompt: A string containing the descriptive and visually rich image prompt in English that you created.
-
   agent: image_prompt_creator
+
+image_generation_task:
+  description: |
+    ### Input:
+    - **Previous Task Output:** Review the output from the image_prompt_creator_task. It contains a JSON object with an "images" array, where each image object has an image_prompt that needs to be generated.
+
+    ### Task:
+    Parse the JSON output from the previous task and for each image object in the images array:
+    - Extract the image_prompt from each image object.
+    - Use the DALL-E 3 Image Generator tool (dalle3_image_generator) to generate the image with the provided prompt.
+    - Use the image_size specified in each image object (default to "1024x1024" if not specified).
+    - Update the image_url field with the generated image URL returned from the tool.
+    - If image generation fails for any image, set the image_url to an error message indicating the failure.
+    - Preserve all other fields (number_of_image, image_size) from the original image objects. Do NOT include image_prompt in the final output.
+
+    IMPORTANT: You must use the dalle3_image_generator tool for each image prompt. Do not skip image generation.
+
+    After generating all images, format your response as JSON with the updated structure.
+
+  expected_output: >
+    Create ONLY JSON Object that represents a list of images based on the following structure, WITHOUT RETURNING '''json''' only start with {:
+
+    A images field, which holds a list of image objects. Each image object in the list should include:
+
+    image_url: A string containing the URL of the generated image (or an error message if generation failed).
+
+    image_size: A string representing the size of the image (e.g., "1024x1024").
+
+    IMPORTANT: Do NOT include image_prompt in the output. Only return image_url and image_size.
+  agent: image_generator
