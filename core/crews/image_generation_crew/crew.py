@@ -10,14 +10,6 @@ class ImageGeneratorCrew():
     tasks_config = 'config/tasks.yaml'
 
     @agent
-    def image_prompt_creator(self) -> Agent:
-        return Agent(
-            config=self.agents_config['image_prompt_creator'],
-            verbose=True,
-            llm=basic_llm,
-        )
-
-    @agent
     def image_generator(self) -> Agent:
         return Agent(
             config=self.agents_config['image_generator'],
@@ -27,18 +19,10 @@ class ImageGeneratorCrew():
         )
 
     @task
-    def image_prompt_creator_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['image_prompt_creator_task'],
-            agent=self.image_prompt_creator(),
-        )
-
-    @task
     def image_generation_task(self) -> Task:
         return Task(
             config=self.tasks_config['image_generation_task'],
             agent=self.image_generator(),
-            context=[self.image_prompt_creator_task()],
         )
 
     @crew

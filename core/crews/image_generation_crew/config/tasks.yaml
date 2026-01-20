@@ -1,48 +1,20 @@
-image_prompt_creator_task:
-  description: |
-    ### Input:
-    - **user_query:** {user_query}  
-      (The raw content or idea provided by the user, which will be transformed into a visually descriptive image prompt.)
-
-    ### Task:
-    Convert the **user_query** into a polished, image-ready prompt that enhances visual output quality.
-    - Ensure the image reflects the style, tone, or theme of {user_query}.
-    - Ensure the final prompt is clear, concise, and does not exceed 150 words.
-    - The prompt must be written in **English**. If the input is in another language, accurately translate it to English before rewriting.
-    - Write the prompt in a single, well-structured paragraph.
-    - Align the visual tone and style of the prompt with the branding elements of the blog, including references to name, logo, colors, or fonts where applicable.
-    - Use rich visual language to inspire AI image generation tools effectively.
-
-    After creating the prompt, format your response as JSON with the structure specified in expected_output.
-
-  expected_output: >
-    Create ONLY JSON Object that represents a list of images based on the following structure, WITHOUT RETURNING '''json''' only start with {:
-
-    A images field, which holds a list of image objects. Each image object in the list should include:
-
-    image_url: Leave this field empty or set to null. The image URL will be generated automatically.
-
-    image_size: A string representing the size of the image (use "1024x1024").
-
-  agent: image_prompt_creator
-
 image_generation_task:
   description: |
     ### Input:
-    - **Previous Task Output:** Review the output from the image_prompt_creator_task. It contains a JSON object with an "images" array, where each image object has an image_prompt that needs to be generated.
+    - **user_query:** {user_query}  
+      (The raw content or idea provided by the user, which will be used to generate images using DALL-E 3.)
 
     ### Task:
-    Parse the JSON output from the previous task and for each image object in the images array:
-    - Extract the image_prompt from each image object.
-    - Use the DALL-E 3 Image Generator tool (dalle3_image_generator) to generate the image with the provided prompt.
-    - Use the image_size specified in each image object (default to "1024x1024" if not specified).
-    - Update the image_url field with the generated image URL returned from the tool.
-    - If image generation fails for any image, set the image_url to an error message indicating the failure.
-    - Preserve all other fields (number_of_image, image_size) from the original image objects. Do NOT include image_prompt in the final output.
+    Generate images using DALL-E 3 based on the user_query:
+    - Use the DALL-E 3 Image Generator tool (dalle3_image_generator) to generate images with the provided user_query as the prompt.
+    - If the user_query is in another language, translate it to English before generating the image.
+    - Use the default image_size of "1024x1024" for all generated images.
+    - If image generation fails, set the image_url to an error message indicating the failure.
+    - Generate at least one image based on the user_query.
 
-    IMPORTANT: You must use the dalle3_image_generator tool for each image prompt. Do not skip image generation.
+    IMPORTANT: You must use the dalle3_image_generator tool to generate images. Do not skip image generation.
 
-    After generating all images, format your response as JSON with the updated structure.
+    After generating all images, format your response as JSON with the structure specified in expected_output.
 
   expected_output: >
     Create ONLY JSON Object that represents a list of images based on the following structure, WITHOUT RETURNING '''json''' only start with {:
@@ -52,6 +24,4 @@ image_generation_task:
     image_url: A string containing the URL of the generated image (or an error message if generation failed).
 
     image_size: A string representing the size of the image (e.g., "1024x1024").
-
-    IMPORTANT: Do NOT include image_prompt in the output. Only return image_url and image_size.
   agent: image_generator
