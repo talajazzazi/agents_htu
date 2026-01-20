@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
     'core'
 ]
 
@@ -76,19 +77,29 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 
+# Database configuration
+# For development/testing without PostgreSQL, use SQLite:
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config('DATABASE_NAME'),
-        'USER': config('DATABASE_USER'),
-        'PASSWORD': config('DATABASE_PASSWORD'),
-        'HOST': config('DATABASE_HOST'),
-        'PORT': config('DATABASE_PORT'),
-        'OPTIONS': {
-            'options': f"-c search_path={config('DATABASE_SCHEMA')}"
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Uncomment below to use PostgreSQL (requires PostgreSQL server running):
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': config('DATABASE_NAME'),
+#         'USER': config('DATABASE_USER'),
+#         'PASSWORD': config('DATABASE_PASSWORD'),
+#         'HOST': config('DATABASE_HOST'),
+#         'PORT': config('DATABASE_PORT'),
+#         'OPTIONS': {
+#             'options': f"-c search_path={config('DATABASE_SCHEMA')}"
+#         },
+#     }
+# }
 
 
 # Password validation
@@ -138,3 +149,13 @@ OPENAI_MODEL=config('OPENAI_MODEL')
 OPENAI_MAX_RETRIES=config('OPENAI_MAX_RETRIES')
 OPENAI_DEFAULT_TEMPERATURE=config('OPENAI_DEFAULT_TEMPERATURE', cast=float)
 OPENAI_DEFAULT_ERROR_MESSAGE=config('OPENAI_DEFAULT_ERROR_MESSAGE')
+
+# REST Framework Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ],
+}
