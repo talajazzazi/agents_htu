@@ -6,13 +6,14 @@ image_generation_task:
 
     ### Task:
     Generate images using DALL-E 3 based on the user_query:
-    - Use the DALL-E 3 Image Generator tool (dalle3_image_generator) to generate images with the provided user_query as the prompt.
+    - Create a **safe, neutral, professional** prompt for DALL-E 3. Focus on generic visuals: abstract illustrations, clean layouts, simple icons, scenery, or straightforward objects. Avoid potentially sensitive topics, violence, controversial subjects, or suggestive wording. Prefer phrases like "professional illustration", "abstract concept", "modern minimalist style".
     - If the user_query is in another language, translate it to English before generating the image.
     - Use the default image_size of "1024x1024" for all generated images.
-    - If image generation fails, set the image_url to an error message indicating the failure.
+    - **If the tool returns "CONTENT_POLICY_VIOLATION" or "safety system"**: Do NOT put the error in image_url. Instead, **retry immediately** with a simpler, more generic prompt (e.g. "Professional abstract illustration about [topic] in a clean, modern style", or "Simple [subject] in minimalist design"). Strip any sensitive wording. Call the tool again until you get a valid image URL or a different error.
+    - If image generation fails for other reasons, set the image_url to an error message indicating the failure.
     - Generate at least one image based on the user_query.
 
-    IMPORTANT: You must use the dalle3_image_generator tool to generate images. Do not skip image generation.
+    IMPORTANT: You must use the dalle3_image_generator tool to generate images. Do not skip image generation. On content policy rejection, always retry with a safer prompt.
 
     After generating all images, format your response as JSON with the structure specified in expected_output.
 

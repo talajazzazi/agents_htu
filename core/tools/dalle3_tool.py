@@ -21,7 +21,8 @@ class Dalle3ImageGenerator(BaseTool):
     name: str = "DALL-E 3 Image Generator"
     description: str = (
         "Generates an image using DALL-E 3 based on the provided prompt. "
-        "Returns the URL of the generated image or an error message if generation fails."
+        "Use safe, neutral, professional prompts (e.g. abstract illustrations, clean layouts). "
+        "Returns the image URL, or an error. If you see CONTENT_POLICY_VIOLATION, retry with a simpler, more generic prompt."
     )
     args_schema: Type[BaseModel] = Dalle3ImageGeneratorInput
 
@@ -62,9 +63,15 @@ class Dalle3ImageGenerator(BaseTool):
                 return f"Error: {error_msg}"
                 
         except Exception as e:
-            error_msg = f"Error generating image with DALL-E 3: {str(e)}"
-            logger.error(error_msg)
-            return f"Error: {error_msg}"
+            err_str = str(e)
+            logger.error("DALL-E 3 error: %s", err_str)
+            if "content_policy_violation" in err_str.lower() or "safety system" in err_str.lower():
+                return (
+                    "Error: CONTENT_POLICY_VIOLATION - The prompt was rejected by the safety system. "
+                    "Retry with a simpler, more neutral, professional prompt (e.g. abstract illustration, "
+                    "generic scenery, or a toned-down description avoiding any sensitive wording)."
+                )
+            return f"Error: {err_str}"
 
 
 # Create an instance of the tool
