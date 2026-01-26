@@ -3,13 +3,13 @@ text_generation_task:
     ### Input:
     - **user_query:** {user_query}  
 
-    Write 3 different social media posts with distinct tones (e.g., friendly, professional, humorous) that align with and address the **user_query**.
+    Write only one  social media posts with distinct tones (e.g., friendly, professional, humorous) that align with and address the **user_query**.
     Ensure the response is in the same language as the user's query, unless explicitly requested otherwise.
-    Ensure that each blog post is engaging, informative, and well-structured, and resonates with the target audiences.
+    Ensure that the blog post is engaging, informative, and well-structured, and resonates with the target audiences.
     Strictly follow any time frames or constraints provided (e.g., '1 PM – 2 PM') if included in the user query."
 
     Consider this when generating:
-    Do not generate more than 300 words/tokens for each blog.
+    Do not generate more than 300 words/tokens for the blog.
     Ensure the caption is concise, engaging, and optimized for readability.
     Use industry-specific hashtags (max 3 per post) for better engagement (e.g., #DataScience, #Leadership).
 
