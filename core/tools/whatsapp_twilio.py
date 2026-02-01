@@ -31,11 +31,10 @@ def get_twilio_client():
     return Client(sid, token)
 
 
-def send_whatsapp_messages(to: str, messages: List[dict]) -> List[str]:
+def send_whatsapp_message(to: str, text: str = "", image_url: str = None) -> str:
     """
-    Send WhatsApp messages via Twilio.
-    messages: [{"text": str, "image": str | None}, ...]
-    Returns: list of Twilio message SIDs, or raises.
+    Send a single WhatsApp message via Twilio.
+    Returns: Twilio message SID.
     """
     if not _TWILIO_AVAILABLE:
         raise RuntimeError("twilio not installed. Run: pip install twilio")
@@ -49,20 +48,15 @@ def send_whatsapp_messages(to: str, messages: List[dict]) -> List[str]:
     if not to.startswith("whatsapp:"):
         to = f"whatsapp:{to}"
 
-    sids = []
     try:
-        for msg in messages:
-            body = msg.get("text") or ""
-            media = msg.get("image")
-            media_urls = [media] if media else None
-            resp = client.messages.create(
-                body=body,
-                from_=from_,
-                to=to,
-                media_url=media_urls,
-            )
-            sids.append(resp.sid)
-        return sids
+        media_urls = [image_url] if image_url else None
+        resp = client.messages.create(
+            body=text or "",
+            from_=from_,
+            to=to,
+            media_url=media_urls,
+        )
+        return resp.sid
     except TwilioRestException as e:
         if e.code == 63007:
             raise RuntimeError(
@@ -72,3 +66,20 @@ def send_whatsapp_messages(to: str, messages: List[dict]) -> List[str]:
                 "or an approved WhatsApp Sender. Set it as TWILIO_WHATSAPP_NUMBER."
             ) from e
         raise
+
+
+def send_whatsapp_messages(to: str, messages: List[dict]) -> List[str]:
+    """
+    Send multiple WhatsApp messages via Twilio.
+    messages: [{"text": str, "image": str | None}, ...]
+    Returns: list of Twilio message SIDs, or raises.
+    """
+    sids = []
+    for msg in messages:
+        sid = send_whatsapp_message(
+            to=to,
+            text=msg.get("text") or "",
+            image_url=msg.get("image")
+        )
+        sids.append(sid)
+    return sids

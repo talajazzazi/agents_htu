@@ -7,4 +7,5 @@ class ContentGenerationState(BaseModel):
    text_generation_output: Dict = {}
    image_generation_output: Optional[Dict] = None
    final_output: Dict = {}
+   whatsapp_to: Optional[str] = None  # Override recipient for WhatsApp (e.g. from webhook)
    whatsapp_send_output: Optional[List[str]] = None
